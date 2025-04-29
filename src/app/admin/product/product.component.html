@@ -1,0 +1,165 @@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Gestion des Produits et Catégories</h2>
+      <button class="btn btn-outline-danger">Déconnexion</button>
+    </div>
+  
+    <!-- Onglets de navigation -->
+    <ul class="nav nav-tabs mb-3">
+      <li class="nav-item">
+        <a class="nav-link" [class.active]="activeTab === 'products'" (click)="setActiveTab('products')" href="javascript:void(0)">
+          Produits
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [class.active]="activeTab === 'categories'" (click)="setActiveTab('categories')" href="javascript:void(0)">
+          Catégories
+        </a>
+      </li>
+    </ul>
+  
+    <!-- Section Produits -->
+    <div *ngIf="activeTab === 'products'">
+      <h3>{{ editingProductId ? 'Modifier un produit' : 'Ajouter un produit' }}</h3>
+      <form [formGroup]="productForm" (ngSubmit)="onSubmitProduct()" class="mb-4">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Nom</label>
+            <input formControlName="name" class="form-control" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Taille</label>
+            <select formControlName="size" class="form-control">
+              <option *ngFor="let s of productSizes" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+        </div>
+  
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <textarea formControlName="description" class="form-control"></textarea>
+        </div>
+  
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Prix</label>
+            <input type="number" formControlName="price" class="form-control" />
+          </div>
+  
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Stock</label>
+            <input type="number" formControlName="stock" class="form-control" />
+          </div>
+  
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Seuil d'alerte</label>
+            <input type="number" formControlName="lowStockThreshold" class="form-control" />
+          </div>
+        </div>
+  
+        <div class="mb-3">
+          <label class="form-label">Image</label>
+          <input type="file" class="form-control" (change)="onFileSelected($event)" />
+        </div>
+  
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Couleur</label>
+            <input formControlName="color" class="form-control" />
+          </div>
+  
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Catégorie</label>
+            <select formControlName="categoryId" class="form-control">
+              <option [value]="null" disabled>Sélectionnez une catégorie</option>
+              <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+            </select>
+          </div>
+        </div>
+  
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success" [disabled]="productForm.invalid">
+            {{ editingProductId ? 'Modifier' : 'Ajouter' }}
+          </button>
+          <button *ngIf="editingProductId" type="button" class="btn btn-secondary" (click)="cancelEditProduct()">
+            Annuler
+          </button>
+        </div>
+      </form>
+  
+      <h3 class="mt-4">Liste des produits</h3>
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Prix</th>
+              <th>Stock</th>
+              <th>Image</th>
+              <th>Catégorie</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let product of products">
+              <td>{{ product.name }}</td>
+              <td>{{ product.price }}</td>
+              <td>{{ product.stock }}</td>
+              <td>
+                <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="Image produit" width="60" height="60" />
+                <span *ngIf="!product.imageUrl">Aucun</span>
+              </td>
+              <td>{{ getCategoryName(product.categoryId) }}</td>
+              <td>
+                <button class="btn btn-sm btn-primary me-2" (click)="editProduct(product)">Modifier</button>
+                <button class="btn btn-sm btn-danger" (click)="deleteProduct(product.id)">Supprimer</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  
+    <!-- Section Catégories -->
+    <div *ngIf="activeTab === 'categories'">
+      <h3>{{ editingCategoryId ? 'Modifier une catégorie' : 'Ajouter une catégorie' }}</h3>
+      <form [formGroup]="categoryForm" (ngSubmit)="onSubmitCategory()" class="mb-4">
+        <div class="mb-3">
+          <label class="form-label">Nom de la catégorie</label>
+          <input formControlName="name" class="form-control" placeholder="Nom de la catégorie" />
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success" [disabled]="categoryForm.invalid">
+            {{ editingCategoryId ? 'Modifier' : 'Ajouter' }}
+          </button>
+          <button *ngIf="editingCategoryId" type="button" class="btn btn-secondary" (click)="cancelEditCategory()">
+            Annuler
+          </button>
+        </div>
+      </form>
+  
+      <h3 class="mt-4">Liste des catégories ({{ categories.length }})</h3>
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let category of categories">
+              <td>{{ category.name }}</td>
+              <td>
+                <button class="btn btn-sm btn-primary me-2" (click)="editCategory(category)">Modifier</button>
+                <button class="btn btn-sm btn-danger" (click)="deleteCategory(category.id)">Supprimer</button>
+              </td>
+            </tr>
+            <tr *ngIf="categories.length === 0">
+              <td colspan="2" class="text-center">Aucune catégorie disponible</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>

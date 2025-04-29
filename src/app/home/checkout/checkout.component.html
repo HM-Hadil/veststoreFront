@@ -1,0 +1,150 @@
+<!-- checkout.component.html -->
+<div class="checkout-container">
+    <div *ngIf="loading" class="loading">
+      <p>Chargement du panier...</p>
+    </div>
+  
+    <div *ngIf="!loading && error && !stockIssue" class="error-message">
+      <p>{{ error }}</p>
+      <button (click)="loadCart()">Réessayer</button>
+    </div>
+  
+    <div *ngIf="!loading && stockIssue" class="error-message">
+      <p>Certains produits ne sont plus en stock dans les quantités demandées.</p>
+      <a routerLink="/panier" class="btn btn-primary">Retourner au panier</a>
+    </div>
+  
+    <div *ngIf="!loading && !error && !stockIssue" class="checkout-content">
+      <div class="checkout-summary">
+        <h2>Résumé de votre commande</h2>
+        
+        <div class="cart-items">
+          <div *ngFor="let item of cart.items" class="cart-item">
+            <div class="item-details">
+              <p class="item-name">{{ item.name }}</p>
+              <p class="item-quantity">Quantité: {{ item.quantity }}</p>
+            </div>
+            <p class="item-price">{{ item.price * item.quantity | currency:'EUR':'symbol':'1.2-2' }}</p>
+          </div>
+        </div>
+        
+        <div class="cart-total">
+          <p>Total: <strong>{{ cart.totalPrice | currency:'EUR':'symbol':'1.2-2' }}</strong></p>
+          <p>Articles: {{ cart.totalQuantity }}</p>
+        </div>
+      </div>
+  
+      <div class="checkout-form">
+        <h2>Informations de livraison</h2>
+        
+        <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()">
+          <div class="form-group">
+            <label for="fullName">Nom complet</label>
+            <input 
+              type="text" 
+              id="fullName" 
+              formControlName="fullName"
+              [ngClass]="{'invalid': isFieldInvalid('fullName')}"
+            >
+            <span *ngIf="isFieldInvalid('fullName')" class="error-text">
+              {{ getFieldError('fullName') }}
+            </span>
+          </div>
+  
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input 
+              type="email" 
+              id="email" 
+              formControlName="email"
+              [ngClass]="{'invalid': isFieldInvalid('email')}"
+            >
+            <span *ngIf="isFieldInvalid('email')" class="error-text">
+              {{ getFieldError('email') }}
+            </span>
+          </div>
+  
+          <div class="form-group">
+            <label for="phone">Téléphone</label>
+            <input 
+              type="tel" 
+              id="phone" 
+              formControlName="phone"
+              [ngClass]="{'invalid': isFieldInvalid('phone')}"
+            >
+            <span *ngIf="isFieldInvalid('phone')" class="error-text">
+              {{ getFieldError('phone') }}
+            </span>
+          </div>
+  
+          <div class="form-group">
+            <label for="address">Adresse</label>
+            <input 
+              type="text" 
+              id="address" 
+              formControlName="address"
+              [ngClass]="{'invalid': isFieldInvalid('address')}"
+            >
+            <span *ngIf="isFieldInvalid('address')" class="error-text">
+              {{ getFieldError('address') }}
+            </span>
+          </div>
+  
+          <div class="form-row">
+            <div class="form-group">
+              <label for="city">Ville</label>
+              <input 
+                type="text" 
+                id="city" 
+                formControlName="city"
+                [ngClass]="{'invalid': isFieldInvalid('city')}"
+              >
+              <span *ngIf="isFieldInvalid('city')" class="error-text">
+                {{ getFieldError('city') }}
+              </span>
+            </div>
+  
+            <div class="form-group">
+              <label for="postalCode">Code postal</label>
+              <input 
+                type="text" 
+                id="postalCode" 
+                formControlName="postalCode"
+                [ngClass]="{'invalid': isFieldInvalid('postalCode')}"
+              >
+              <span *ngIf="isFieldInvalid('postalCode')" class="error-text">
+                {{ getFieldError('postalCode') }}
+              </span>
+            </div>
+          </div>
+  
+          <div class="form-group">
+            <label for="country">Pays</label>
+            <input 
+              type="text" 
+              id="country" 
+              formControlName="country"
+              [ngClass]="{'invalid': isFieldInvalid('country')}"
+            >
+            <span *ngIf="isFieldInvalid('country')" class="error-text">
+              {{ getFieldError('country') }}
+            </span>
+          </div>
+  
+          <div class="form-actions">
+            <button 
+              type="submit" 
+              class="btn-submit" 
+              [disabled]="submitting || stockIssue">
+              {{ submitting ? 'Traitement en cours...' : 'Confirmer la commande' }}
+            </button>
+            <a routerLink="/panier" class="btn-back">Retour au panier</a>
+          </div>
+  
+          <div *ngIf="error && !stockIssue" class="form-error">
+            {{ error }}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>

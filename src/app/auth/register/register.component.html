@@ -1,0 +1,32 @@
+<div class="container mt-5">
+    <h2>Inscription</h2>
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="mt-3">
+      <div class="mb-3">
+        <label class="form-label">Nom</label>
+        <input class="form-control" formControlName="name" />
+      </div>
+  
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input class="form-control" formControlName="email" />
+      </div>
+  
+      <div class="mb-3">
+        <label class="form-label">Mot de passe</label>
+        <input type="password" class="form-control" formControlName="password" />
+      </div>
+  
+      <div class="mb-3">
+        <label class="form-label">Adresse</label>
+        <input class="form-control" formControlName="address" />
+      </div>
+  
+      <div class="mb-3">
+        <label class="form-label">Téléphone</label>
+        <input class="form-control" formControlName="phone" />
+      </div>
+  
+      <button class="btn btn-primary" type="submit" [disabled]="registerForm.invalid">S'inscrire</button>
+    </form>
+  </div>
+  

@@ -1,0 +1,85 @@
+<div class="container mx-auto py-4">
+    <h1 class="text-2xl font-bold mb-6 text-center">Mes Commandes</h1>
+  
+    @if (loading) {
+    <div class="flex justify-center items-center h-60">
+      <div class="loader">Chargement...</div>
+    </div>
+    }
+  
+    @if (error) {
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+      {{ error }}
+    </div>
+    }
+  
+    @if (!loading && !error) {
+    <div>
+      <!-- Filtres par statut -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        @for (filter of statusFilters; track filter.value) {
+        <button 
+          class="px-4 py-2 rounded border"
+          [ngClass]="currentFilter === filter.value ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'"
+          (click)="setStatusFilter(filter.value)">
+          {{ filter.label }}
+        </button>
+        }
+      </div>
+  
+      @if (filteredOrders.length === 0) {
+      <div class="bg-gray-100 p-8 rounded text-center">
+        <p class="text-gray-600">Aucune commande ne correspond à votre recherche.</p>
+      </div>
+      }
+  
+      @if (filteredOrders.length > 0) {
+      <div class="grid grid-cols-1 gap-6">
+        @for (order of filteredOrders; track order.id) {
+        <div 
+          class="bg-white shadow rounded overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+          (click)="viewOrderDetails(order.id)">
+          <div class="p-4 border-b">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 class="font-semibold">Commande #{{ order.id }}</h3>
+                <p class="text-sm text-gray-500">{{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+              </div>
+              <div class="flex items-center">
+                <span 
+                  class="px-3 py-1 rounded-full text-xs"
+                  [ngClass]="getStatusClass(order.status)">
+                  {{ getStatusText(order.status) }}
+                </span>
+                @if (order.canCancel) {
+                <button 
+                  class="ml-4 text-red-600 hover:text-red-800 text-sm"
+                  (click)="cancelOrder(order.id, $event)">
+                  Annuler
+                </button>
+                }
+              </div>
+            </div>
+          </div>
+          <div class="p-4">
+            <div class="mb-2">
+              <span class="text-gray-600">Articles:</span> 
+              <span class="font-medium">{{ order.items.length }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <div>
+                <span class="text-gray-600">Livraison à:</span> 
+                <span class="text-sm">{{ order.shippingAddress }}</span>
+              </div>
+              <div class="text-lg font-bold">
+                {{ order.totalAmount | currency:'EUR':'symbol':'1.2-2' }}
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+    }
+  </div>

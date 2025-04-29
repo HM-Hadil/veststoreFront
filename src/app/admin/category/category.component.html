@@ -1,0 +1,16 @@
+<form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" class="mb-4">
+    <div class="form-group">
+      <label>Nom de la catégorie</label>
+      <input formControlName="name" class="form-control" placeholder="Nom de la catégorie" />
+    </div>
+    <button type="submit" class="btn btn-primary mt-2" [disabled]="categoryForm.invalid">Ajouter</button>
+  </form>
+  
+  <ul class="list-group">
+    @for (category of categories; track $index) {
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      {{ category.name }}
+      <button class="btn btn-sm btn-danger" (click)="deleteCategory(category.id)">Supprimer</button>
+    </li>}
+  </ul>
+  
