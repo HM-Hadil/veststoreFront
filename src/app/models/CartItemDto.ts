@@ -10,4 +10,5 @@ export interface CartItemDto {
     color: string;
     price: number; 
     status?: CartStatus;
+    Stock?:number;
   }

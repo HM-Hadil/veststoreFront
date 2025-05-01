@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ProductSize } from '../models/ProductSize';
 
@@ -72,4 +72,27 @@ export class ProductService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+   // Decrement stock after order validation
+   decrementStock(productId: number, quantity: number): Observable<void> {
+    const params = new HttpParams()
+      .set('quantity', quantity.toString());
+    
+    return this.http.post<void>(
+      `${this.apiUrl}/${productId}/decrement-stock`, 
+      null, 
+      { 
+        headers: this.getAuthHeaders(),
+        params: params
+      }
+    );
+  }
+  // Get the auth token from localStorage
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+  }
+
 }

@@ -6,8 +6,6 @@ import { CartItemDto } from '../models/CartItemDto';
 import { CartStatus } from '../models/CartStatus';
 import { Product } from './product.service';
 import { jwtDecode } from 'jwt-decode';
-import { AuthService } from './auth.service';
-
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +15,6 @@ export class CartService {
 
   constructor(private http: HttpClient) { }
 
-  
   // Get the auth token from localStorage
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
@@ -27,7 +24,7 @@ export class CartService {
     });
   }
 
-  // Récupérer l'email depuis le token
+  // Récupérer l'ID depuis le token
   private getIdFromToken(): number | null {
     const token = localStorage.getItem('token');
     if (!token) return null;
@@ -43,15 +40,14 @@ export class CartService {
   
   private getUserId(): Observable<number> {
     const id = this.getIdFromToken();
-    console.log('id',id)
+    console.log('id', id);
     if (id === null) {
       return of(0);
     }
     return of(id);
   }
   
- 
-  // Ajouter un produit au panier - Nouvelle méthode pour simplifier l'ajout de produits
+  // Ajouter un produit au panier
   addToCart(product: Product, quantity: number = 1): Observable<CartDto> {
     return this.getUserId().pipe(
       switchMap(userId => {
@@ -186,10 +182,25 @@ export class CartService {
     return this.http.get<CartItemDto[]>(`${this.apiUrl}/admin/orders`, { params, headers: this.getAuthHeaders() });
   }
 
-  // Mettre à jour le statut d'une commande (admin)
+  // Mettre à jour le statut d'une commande
   updateOrderStatus(cartItemId: number, status: CartStatus): Observable<void> {
-    let params = new HttpParams().set('status', status.toString());
-    return this.http.put<void>(`${this.apiUrl}/admin/orders/${cartItemId}/status`, null, { params, headers: this.getAuthHeaders() });
+    return this.getUserId().pipe(
+      switchMap(userId => {
+        if (userId === 0) {
+          throw new Error('Utilisateur non connecté ou ID non disponible');
+        }
+        
+        let params = new HttpParams()
+          .set('userId', userId.toString())
+          .set('status', status.toString());
+          
+        return this.http.put<void>(
+          `${this.apiUrl}/items/${cartItemId}/status`, 
+          null, 
+          { params, headers: this.getAuthHeaders() }
+        );
+      })
+    );
   }
 
   // Récupérer les produits avec un stock faible (admin)

@@ -1,152 +1,209 @@
-
 .cart-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
   h2 {
-    font-size: 24px;
     margin-bottom: 20px;
     color: #333;
   }
-
+  
   .loading, .empty-cart {
     text-align: center;
-    padding: 30px;
-    background-color: #f8f9fa;
-    border-radius: 5px;
+    padding: 20px;
     margin: 20px 0;
+    background-color: #f9f9f9;
+    border-radius: 5px;
   }
-
+  
   .shop-btn {
-    display: inline-block;
-    background-color: #007bff;
-    color: white;
     padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
     border: none;
     border-radius: 4px;
-    margin-top: 15px;
     cursor: pointer;
-    text-decoration: none;
-    font-weight: 500;
-
-    &:hover {
-      background-color: #0069d9;
-    }
+    font-size: 14px;
+    margin-top: 10px;
   }
-
+  
+  .shop-btn:hover {
+    background-color: #45a049;
+  }
+  
   .cart-table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 30px;
-
-    th, td {
-      padding: 12px 15px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-
-    th {
-      background-color: #f8f9fa;
-      font-weight: 600;
-    }
-
-    .color-circle {
-      display: inline-block;
-      width: 15px;
-      height: 15px;
-      border-radius: 50%;
-      margin-right: 5px;
-      vertical-align: middle;
-      border: 1px solid #ddd;
-    }
-
-    .quantity-controls {
-      display: flex;
-      align-items: center;
-      
-      button {
-        width: 30px;
-        height: 30px;
-        background-color: #f8f9fa;
-        border: 1px solid #ddd;
-        border-radius: 3px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        &:hover:not(:disabled) {
-          background-color: #e9ecef;
-        }
-      }
-
-      span {
-        margin: 0 10px;
-        min-width: 20px;
-        text-align: center;
-      }
-    }
-
-    .remove-btn {
-      background-color: #dc3545;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 3px;
-      cursor: pointer;
-
-      &:hover {
-        background-color: #c82333;
-      }
-    }
+    margin-bottom: 20px;
   }
-
-  .cart-summary {
-    background-color: #f8f9fa;
-    padding: 20px;
-    border-radius: 5px;
+  
+  .cart-table th, .cart-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .cart-table th {
+    background-color: #f2f2f2;
+  }
+  
+  .color-circle {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+  }
+  
+  .quantity-controls {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-
-    p {
-      font-size: 18px;
-      margin: 0;
-    }
-
-    .checkout-btn {
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 500;
-
-      &:hover {
-        background-color: #218838;
-      }
-    }
-
-    .clear-btn {
-      background-color: #6c757d;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 500;
-
-      &:hover {
-        background-color: #5a6268;
-      }
-    }
   }
-}
+  
+  .quantity-controls button {
+    width: 30px;
+    height: 30px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .quantity-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .quantity-controls span {
+    padding: 0 10px;
+    min-width: 30px;
+    text-align: center;
+  }
+  
+  .remove-btn, .validate-btn, .cancel-btn {
+    padding: 6px 12px;
+    margin-right: 5px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  
+  .remove-btn {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .validate-btn {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  .cancel-btn {
+    background-color: #ff9800;
+    color: white;
+  }
+  
+  .remove-btn:hover {
+    background-color: #d32f2f;
+  }
+  
+  .validate-btn:hover {
+    background-color: #45a049;
+  }
+  
+  .cancel-btn:hover {
+    background-color: #f57c00;
+  }
+  
+  .cart-summary {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+  }
+  
+  .cart-summary p {
+    margin-right: 20px;
+    font-size: 18px;
+  }
+  
+  .checkout-btn, .clear-btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-left: 10px;
+  }
+  
+  .checkout-btn {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  .clear-btn {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .checkout-btn:hover {
+    background-color: #45a049;
+  }
+  
+  .clear-btn:hover {
+    background-color: #d32f2f;
+  }
+  
+  .error-message {
+    color: #f44336;
+    background-color: #ffebee;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 20px;
+  }
+  
+  /* Status badges */
+  .status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  
+  .status-pending {
+    background-color: #FFF3CD;
+    color: #856404;
+  }
+  
+  .status-validated {
+    background-color: #D4EDDA;
+    color: #155724;
+  }
+  
+  .status-preparing {
+    background-color: #CCE5FF;
+    color: #004085;
+  }
+  
+  .status-shipped {
+    background-color: #D1ECF1;
+    color: #0C5460;
+  }
+  
+  .status-delivered {
+    background-color: #C3E6CB;
+    color: #1E7E34;
+  }
+  
+  .status-cancelled {
+    background-color: #F8D7DA;
+    color: #721C24;
+  }

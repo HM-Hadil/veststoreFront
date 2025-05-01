@@ -21,6 +21,7 @@
           <th>Prix unitaire</th>
           <th>Quantité</th>
           <th>Total</th>
+          <th>Status</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -35,14 +36,21 @@
           <td>{{ item.price }}</td>
           <td>
             <div class="quantity-controls">
-              <button (click)="updateItemQuantity(item.id, item.quantity - 1)" [disabled]="item.quantity <= 1">-</button>
+              <button (click)="updateItemQuantity(item.id, item.quantity - 1)" [disabled]="item.quantity <= 1 || item.status !== CartStatus.EN_ATTENTE">-</button>
               <span>{{ item.quantity }}</span>
-              <button (click)="updateItemQuantity(item.id, item.quantity + 1)">+</button>
+              <button (click)="updateItemQuantity(item.id, item.quantity + 1)" [disabled]="item.status !== CartStatus.EN_ATTENTE">+</button>
             </div>
           </td>
           <td>{{ item.price * item.quantity }}</td>
           <td>
-            <button class="remove-btn" (click)="removeItem(item.id)">Supprimer</button>
+            <span class="status-badge" [ngClass]="getStatusClass(item.status)">
+              {{ getStatusLabel(item.status) }}
+            </span>
+          </td>
+          <td>
+            <button class="remove-btn" (click)="removeItem(item.id)" *ngIf="item.status === CartStatus.EN_ATTENTE">Supprimer</button>
+            <button class="validate-btn" (click)="validateItem(item.id)" *ngIf="item.status === CartStatus.EN_ATTENTE">Valider</button>
+            <button class="cancel-btn" (click)="cancelItem(item.id)" *ngIf="item.status === CartStatus.EN_ATTENTE">Annuler</button>
           </td>
         </tr>
       </tbody>
@@ -53,5 +61,9 @@
       <button class="checkout-btn" (click)="checkout()">Passer la commande</button>
       <button class="clear-btn" (click)="clearCart()">Vider le panier</button>
     </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
   </div>
 </div>
