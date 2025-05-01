@@ -1,0 +1,143 @@
+<div class="admin-orders-container">
+    <h1>Gestion des commandes</h1>
+    
+    <!-- Section des filtres -->
+    <div class="filter-section">
+      <h2>Filtres</h2>
+      <div class="filters-grid">
+        <!-- Filtre par statut -->
+        <div class="filter-item">
+          <label for="statusFilter">Statut :</label>
+          <select id="statusFilter" [formControl]="statusFilter" class="form-control">
+            <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </div>
+        
+        <!-- Recherche par nom de produit -->
+        <div class="filter-item">
+          <label for="searchFilter">Recherche produit :</label>
+          <input type="text" id="searchFilter" [formControl]="searchFilter" placeholder="Nom du produit..." class="form-control">
+        </div>
+        
+        <!-- Filtre par prix -->
+        <div class="filter-item">
+          <label for="priceMinFilter">Prix minimum :</label>
+          <input type="number" id="priceMinFilter" [formControl]="priceMinFilter" placeholder="0" class="form-control">
+        </div>
+        
+        <div class="filter-item">
+          <label for="priceMaxFilter">Prix maximum :</label>
+          <input type="number" id="priceMaxFilter" [formControl]="priceMaxFilter" placeholder="Max" class="form-control">
+        </div>
+        
+        <!-- Bouton pour réinitialiser les filtres -->
+        <div class="filter-item">
+          <button (click)="resetFilters()" class="btn btn-outline-secondary btn-reset">
+            Réinitialiser filtres
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Indicateur de chargement -->
+    <div *ngIf="loading" class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Chargement des commandes...</p>
+    </div>
+    
+    <!-- Message d'erreur -->
+    <div *ngIf="error" class="error-message">
+      <p>{{ error }}</p>
+      <button (click)="loadAllOrders()" class="btn btn-primary">Réessayer</button>
+    </div>
+    
+    <!-- Tableau des commandes -->
+    <div class="table-responsive" *ngIf="!loading && !error">
+      <p *ngIf="filteredCartItems.length === 0" class="no-results">Aucune commande ne correspond aux critères de recherche.</p>
+      
+      <table *ngIf="filteredCartItems.length > 0" class="table table-striped">
+        <thead>
+          <tr>
+            <th (click)="setSorting('id')" class="sortable">
+              ID
+              <span *ngIf="sortField === 'id'" class="sort-indicator">
+                {{ sortDirection === 'asc' ? '↑' : '↓' }}
+              </span>
+            </th>
+            <th (click)="setSorting('productName')" class="sortable">
+              Produit
+              <span *ngIf="sortField === 'productName'" class="sort-indicator">
+                {{ sortDirection === 'asc' ? '↑' : '↓' }}
+              </span>
+            </th>
+            <th (click)="setSorting('quantity')" class="sortable">
+              Quantité
+              <span *ngIf="sortField === 'quantity'" class="sort-indicator">
+                {{ sortDirection === 'asc' ? '↑' : '↓' }}
+              </span>
+            </th>
+            <th>Taille</th>
+            <th>Couleur</th>
+            <th (click)="setSorting('price')" class="sortable">
+              Prix
+              <span *ngIf="sortField === 'price'" class="sort-indicator">
+                {{ sortDirection === 'asc' ? '↑' : '↓' }}
+              </span>
+            </th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of filteredCartItems">
+            <td>{{ item.id }}</td>
+            <td>{{ item.productName }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.size }}</td>
+            <td><span class="color-sample" [style.background-color]="item.color"></span> {{ item.color }}</td>
+            <td>{{ item.price | currency:'EUR' }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusColor(item.status)">
+                {{ item.status }}
+              </span>
+            </td>
+            <td class="actions-cell">
+              <!-- Action pour passer au statut suivant -->
+              <button *ngIf="getNextStatus(item.status)" 
+              class="btn btn-sm btn-primary action-btn"
+              (click)="progressOrder(item.id, item.status)">
+        {{ item.status === CartStatus.EN_ATTENTE ? 'Valider' : 
+            item.status === CartStatus.VALIDEE ? 'Expédier' : 
+            item.status === CartStatus.EXPEDIEE ? 'Marquer livrée' : '' }}
+      </button>
+              
+              <!-- Action pour annuler (si possible) -->
+              <button *ngIf="canChangeStatus(item.status, CartStatus.ANNULEE)" 
+                      class="btn btn-sm btn-danger action-btn"
+                      (click)="updateOrderStatus(item.id, CartStatus.ANNULEE)">
+                Annuler
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Résumé des commandes -->
+    <div class="summary-section" *ngIf="!loading && !error && filteredCartItems.length > 0">
+      <div class="summary-card">
+        <h3>Total des commandes</h3>
+        <p class="summary-value">{{ filteredCartItems.length }}</p>
+      </div>
+      
+      <div class="summary-card">
+        <h3>Valeur totale</h3>
+        <p class="summary-value">{{ getTotalValue() | currency:'EUR' }}</p>
+      </div>
+      
+      <div class="summary-card">
+        <h3>Panier moyen</h3>
+        <p class="summary-value">{{ getAverageCartValue() | currency:'EUR' }}</p>
+      </div>
+    </div>
+  </div>

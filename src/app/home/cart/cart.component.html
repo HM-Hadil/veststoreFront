@@ -1,143 +1,57 @@
-<div class="container mx-auto py-4">
-    <h1 class="text-2xl font-bold mb-6 text-center">Mon Panier</h1>
+<!-- cart.component.html -->
+<div class="cart-container">
+  <h2>Votre Panier</h2>
   
-    @if (loading) {
-    <div class="flex justify-center items-center h-60">
-      <div class="loader">Chargement...</div>
-    </div>
-    }
-  
-    @if (error) {
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-      {{ error }}
-    </div>
-    }
-  
-    @if (!loading && !error) {
-    <div>
-      @if (cart.items.length === 0) {
-      <div class="bg-gray-100 p-8 rounded text-center">
-        <p class="text-gray-600">Votre panier est vide.</p>
-        <button 
-          class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          routerLink="/produits">
-          Continuer vos achats
-        </button>
-      </div>
-      }
-  
-      @if (cart.items.length > 0) {
-      <div class="bg-white shadow rounded overflow-hidden mb-6">
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produit</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              @for (item of cart.items; track item.id) {
-              <tr>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div class="flex-shrink-0 h-12 w-12 bg-gray-200">
-                      @if (item.product.imageUrl) {
-                      <img class="h-12 w-12 object-cover" [src]="'data:image/jpeg;base64,' + item.product.imageUrl" [alt]="item.product.name">
-                      }
-                      @if (!item.product.imageUrl) {
-                      <img class="h-12 w-12 object-cover" src="assets/placeholder.jpg" [alt]="item.product.name">
-                      }
-                    </div>
-                    <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">{{ item.product.name }}</div>
-                      <div class="text-sm text-gray-500">
-                        @if (item.product.size) {
-                        <span>Taille: {{ item.product.size }}</span>
-                        }
-                        @if (item.product.color) {
-                        <span class="ml-2">Couleur: {{ item.product.color }}</span>
-                        }
-                      </div>
-                      @if (stockWarnings[item.id!]) {
-                      <div class="text-xs text-red-500 mt-1">{{ stockWarnings[item.id!] }}</div>
-                      }
-                    </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ item.price | currency:'EUR':'symbol':'1.2-2' }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <button 
-                      class="bg-gray-200 text-gray-700 px-2 py-1 rounded-l hover:bg-gray-300"
-                      (click)="updateQuantity(item, item.quantity - 1)">
-                      -
-                    </button>
-                    <input 
-                      type="number" 
-                      class="w-12 text-center border-t border-b"
-                      [value]="item.quantity"
-                      (change)="updateQuantity(item, $any($event.target).value)">
-                    <button 
-                      class="bg-gray-200 text-gray-700 px-2 py-1 rounded-r hover:bg-gray-300"
-                      (click)="updateQuantity(item, item.quantity + 1)">
-                      +
-                    </button>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  {{ (item.price * item.quantity) | currency:'EUR':'symbol':'1.2-2' }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button 
-                    class="text-red-600 hover:text-red-800"
-                    (click)="removeItem(item)">
-                    Supprimer
-                  </button>
-                </td>
-              </tr>
-              }
-            </tbody>
-            <tfoot>
-              <tr class="bg-gray-50">
-                <td colspan="3" class="px-6 py-4 text-right font-medium">Total:</td>
-                <td class="px-6 py-4 whitespace-nowrap text-lg font-bold">
-                  {{ cart.totalPrice | currency:'EUR':'symbol':'1.2-2' }}
-                </td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
-  
-      <div class="flex justify-between mt-6">
-        <button 
-          class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
-          (click)="clearCart()">
-          Vider le panier
-        </button>
-        <div>
-          <button 
-            class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 mr-2"
-            routerLink="/produits">
-            Continuer vos achats
-          </button>
-          <button 
-            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            (click)="checkout()"
-            [disabled]="Object.keys(stockWarnings).length > 0"
-            [ngClass]="{'opacity-50 cursor-not-allowed': Object.keys(stockWarnings).length > 0}">
-            Passer la commande
-          </button>
-        </div>
-      </div>
-      }
-    </div>
-    }
+  <div *ngIf="isLoading" class="loading">
+    Chargement de votre panier...
   </div>
+  
+  <div *ngIf="!isLoading && cartItems.length === 0" class="empty-cart">
+    <p>Votre panier est vide</p>
+    <button routerLink="/product" class="shop-btn">Retour aux produits</button>
+  </div>
+  
+  <div *ngIf="!isLoading && cartItems.length > 0">
+    <table class="cart-table">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Taille</th>
+          <th>Couleur</th>
+          <th>Prix unitaire</th>
+          <th>Quantité</th>
+          <th>Total</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of cartItems">
+          <td>{{ item.productName }}</td>
+          <td>{{ item.size }}</td>
+          <td>
+            <span class="color-circle" [style.background-color]="item.color"></span>
+            {{ item.color }}
+          </td>
+          <td>{{ item.price }}</td>
+          <td>
+            <div class="quantity-controls">
+              <button (click)="updateItemQuantity(item.id, item.quantity - 1)" [disabled]="item.quantity <= 1">-</button>
+              <span>{{ item.quantity }}</span>
+              <button (click)="updateItemQuantity(item.id, item.quantity + 1)">+</button>
+            </div>
+          </td>
+          <td>{{ item.price * item.quantity }}</td>
+          <td>
+            <button class="remove-btn" (click)="removeItem(item.id)">Supprimer</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div class="cart-summary">
+      <p>Total: <strong>{{ calculateTotal() }}</strong></p>
+      <button class="checkout-btn" (click)="checkout()">Passer la commande</button>
+      <button class="clear-btn" (click)="clearCart()">Vider le panier</button>
+    </div>
+  </div>
+</div>

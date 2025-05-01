@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ProductSize } from '../models/ProductSize';
 
 export interface Product {
   id: number;
   name: string;
   description: string;
-  size: string;
+  size: ProductSize;
   color: string;
   price: number;
   stock: number;

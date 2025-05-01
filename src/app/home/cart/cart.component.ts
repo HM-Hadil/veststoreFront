@@ -1,127 +1,115 @@
-
 import { Component, OnInit } from '@angular/core';
-import { CurrencyPipe, NgClass, NgFor, NgIf } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { Cart, CartItem, CartServiceService } from '../../services/cart-service.service';
+import { Router, RouterLink } from '@angular/router';
+import { Observable, finalize } from 'rxjs';
+import { CartItemDto } from '../../models/CartItemDto';
+import { CartService } from '../../services/cart-service.service';
+
 @Component({
   selector: 'app-cart',
-  imports: [ NgClass, FormsModule, CurrencyPipe],
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './cart.component.html',
-  styleUrl: './cart.component.css'
+  styleUrls: ['./cart.component.css']
 })
-export class CartComponent {
-
-  cart: Cart = { items: [], totalQuantity: 0, totalPrice: 0 };
-  loading = false;
-  error: string | null = null;
-  stockWarnings: { [key: number]: string } = {};
-Object: any;
+export class CartComponent implements OnInit {
+  cartItems: CartItemDto[] = [];
+  isLoading = true;
+  errorMessage = '';
 
   constructor(
-    private cartService: CartServiceService,
+    private cartService: CartService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    this.loadCart();
-    this.cartService.cart$.subscribe(cart => {
-      this.cart = cart;
-    });
+    this.loadCartItems();
   }
 
-  loadCart(): void {
-    this.loading = true;
-    this.cartService.getCart().subscribe({
-      next: (cart) => {
-        this.cart = cart;
-        this.loading = false;
-        this.checkStock();
-      },
-      error: (err) => {
-        this.error = 'Erreur lors du chargement du panier. Veuillez réessayer.';
-        this.loading = false;
-        console.error(err);
-      }
-    });
-  }
-  
-  updateQuantity(item: CartItem, newQuantity: number): void {
-    if (newQuantity <= 0) {
-      this.removeItem(item);
-      return;
-    }
-    
-    // Vérification du stock avant mise à jour
-    this.cartService.checkProductStock(item.productId, newQuantity).subscribe({
-      next: (isAvailable) => {
-        if (isAvailable) {
-          this.stockWarnings[item.id!] = '';
-          this.cartService.updateCartItem(item.id!, newQuantity).subscribe({
-            error: (err) => {
-              console.error('Erreur lors de la mise à jour du panier', err);
-              this.error = 'Erreur lors de la mise à jour du panier';
-            }
-          });
-        } else {
-          this.stockWarnings[item.id!] = `Stock insuffisant (${item.product.stock} disponible)`;
+  loadCartItems(): void {
+    this.isLoading = true;
+    this.cartService.getCart()
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: (cart) => {
+          this.cartItems = cart.items || [];
+          console.log('Cart items loaded:', this.cartItems);
+        },
+        error: (error) => {
+          console.error('Error loading cart:', error);
+          this.errorMessage = 'Erreur lors du chargement du panier. Veuillez réessayer.';
         }
-      },
-      error: (err) => {
-        console.error('Erreur lors de la vérification du stock', err);
-      }
-    });
+      });
   }
 
-  removeItem(item: CartItem): void {
-    this.cartService.removeCartItem(item.id!).subscribe({
-      next: () => {
-        delete this.stockWarnings[item.id!];
-      },
-      error: (err) => {
-        console.error('Erreur lors de la suppression de l\'article', err);
-        this.error = 'Erreur lors de la suppression de l\'article';
-      }
-    });
+  updateItemQuantity(itemId: number, quantity: number): void {
+    if (quantity < 1) return;
+    
+    this.cartService.updateCartItem(itemId, quantity)
+      .subscribe({
+        next: (cart) => {
+          this.cartItems = cart.items || [];
+          console.log('Item quantity updated');
+        },
+        error: (error) => {
+          console.error('Error updating quantity:', error);
+          // Reload cart to get current state
+          this.loadCartItems();
+        }
+      });
+  }
+
+  removeItem(itemId: number): void {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet article du panier?')) {
+      this.cartService.removeCartItem(itemId)
+        .subscribe({
+          next: () => {
+            console.log('Item removed');
+            this.cartItems = this.cartItems.filter(item => item.id !== itemId);
+          },
+          error: (error) => {
+            console.error('Error removing item:', error);
+            this.loadCartItems();
+          }
+        });
+    }
   }
 
   clearCart(): void {
-    this.cartService.clearCart().subscribe({
-      next: () => {
-        this.stockWarnings = {};
-      },
-      error: (err) => {
-        console.error('Erreur lors de la vidange du panier', err);
-        this.error = 'Erreur lors de la vidange du panier';
-      }
-    });
+    if (confirm('Êtes-vous sûr de vouloir vider votre panier?')) {
+      this.cartService.clearCart()
+        .subscribe({
+          next: () => {
+            console.log('Cart cleared');
+            this.cartItems = [];
+          },
+          error: (error) => {
+            console.error('Error clearing cart:', error);
+          }
+        });
+    }
   }
 
   checkout(): void {
-    // Vérification finale du stock avant validation
-    this.checkStock(true).then(allAvailable => {
-      if (allAvailable) {
-        this.router.navigate(['/checkout']);
-      }
-    });
+    this.cartService.placeOrder()
+      .subscribe({
+        next: () => {
+          console.log('Order placed successfully');
+          this.router.navigate(['/orders']);
+        },
+        error: (error) => {
+          console.error('Error placing order:', error);
+          this.errorMessage = 'Erreur lors de la commande. Veuillez vérifier votre panier et réessayer.';
+        }
+      });
   }
 
-  private checkStock(navigateOnSuccess: boolean = false): Promise<boolean> {
-    this.stockWarnings = {};
-    const promises = this.cart.items.map(item => {
-      return new Promise<boolean>(resolve => {
-        this.cartService.checkProductStock(item.productId, item.quantity).subscribe({
-          next: (isAvailable) => {
-            if (!isAvailable) {
-              this.stockWarnings[item.id!] = `Stock insuffisant (${item.product.stock} disponible)`;
-            }
-            resolve(isAvailable);
-          },
-          error: () => resolve(false)
-        });
-      });
-    });
-
-    return Promise.all(promises).then(results => !results.includes(false));
+  calculateTotal(): number {
+    return this.cartItems.reduce((sum, item) => {
+      // Vérifie si price est défini, sinon utilise 0
+      const price = item.price !== undefined ? item.price : 0;
+      return sum + (price * item.quantity);
+    }, 0);
   }
 }
